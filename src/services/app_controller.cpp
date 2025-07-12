@@ -28,7 +28,11 @@ void AppController::login() {
     credentialsJsonPayloadObj["password"] = password;
     std::string credentialsJsonPayload = credentialsJsonPayloadObj.dump();
 
-    loginResponse = HttpClient::postRequest(m_serverUrl, "/login", credentialsJsonPayload);
+    try {
+      loginResponse = HttpClient::postRequest(m_serverUrl, "/login", credentialsJsonPayload);
+    } catch (const std::runtime_error& e) {
+      std::cout << e.what() << "\n";
+    }
   } while (!loginResponse["user"].contains("accessToken"));
 
   m_accessToken = loginResponse["user"].value("accessToken", "");

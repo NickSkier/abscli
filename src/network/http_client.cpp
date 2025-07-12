@@ -8,6 +8,27 @@
 
 using json = nlohmann::json;
 
+namespace {
+  auto validateResponse(const cpr::Response& httpResponse) -> json {
+    json response;
+    if (httpResponse.status_code >= 200 && httpResponse.status_code < 300) {
+      if (httpResponse.text.empty()) { return json{}; }
+      std::cout << "Successful request!\n" << "\n";
+      try {
+        return json::parse(httpResponse.text);
+      } catch (const json::parse_error& e) {
+        throw std::runtime_error("Failed to parse JSON response: " + std::string(e.what()));
+      }
+    }
+    std::string errorMessage = "[ERROR] Request for URL " + std::string(httpResponse.url)
+                               + " failed with status code: " +
+                               std::to_string(httpResponse.status_code) +
+                               ". Body: [" + std::string(httpResponse.text) + "]";
+    throw std::runtime_error(errorMessage);
+    return json{};
+  }
+}
+
 namespace HttpClient {
   auto postRequest(const std::string& hostUrl,
                                const std::string& endpoint,
@@ -26,7 +47,7 @@ namespace HttpClient {
       headers
     );
 
-    return json::parse(response.text);
+    return validateResponse(response);
   }
 
   auto pingServer(const std::string& serverUrl) -> bool {
