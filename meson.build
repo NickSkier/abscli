@@ -1,9 +1,20 @@
 project('abscli', 'cpp',
   version : '0.1',
   default_options : ['warning_level=3',
-                     'cpp_std=c++14'])
+                     'cpp_std=c++17'])
 
-exe = executable('abscli', 'abscli.cpp',
-  install : true)
+abscli_sources = [
+  'abscli.cpp',
+]
+
+abscli_deps = [
+  dependency('cpr'),
+  dependency('nlohmann_json'),
+]
+
+exe = executable('abscli', abscli_sources,
+  dependencies: abscli_deps,
+  install: true,
+)
 
 test('basic', exe)
