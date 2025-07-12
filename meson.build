@@ -5,6 +5,7 @@ project('abscli', 'cpp',
 
 abscli_sources = [
   'src/main.cpp',
+  'src/services/app_controller.cpp',
   'src/network/http_client.cpp',
 ]
 

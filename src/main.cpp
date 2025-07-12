@@ -1,5 +1,5 @@
 #include <iostream>
-#include "network/http_client.hpp"
+#include "services/app_controller.hpp"
 
 int main(int argc, char **argv) {
   if(argc != 1) {
@@ -7,16 +7,17 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  AppController appController;
   bool appLoop = true;
   while (appLoop) {
-    std::cout << "\nPing (1)\n"
-                   "Exit (0)\n"
+    std::cout << "\nLogin (1)\n"
+                   "Exit  (0)\n"
                    "Enter: ";
     int choice;
     std::cin >> choice;
     std::cout << "-------------------\n";
     switch (choice) {
-    case 1: pingServer(); break;
+    case 1: appController.login(); break;
     case 0: appLoop = false; break;
     default: std::cout << "Wrong number\n"; break;
     }
