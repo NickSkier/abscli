@@ -4,7 +4,7 @@ project('abscli', 'cpp',
                      'cpp_std=c++17'])
 
 abscli_sources = [
-  'src/abscli.cpp',
+  'src/main.cpp',
   'src/network/http_client.cpp',
 ]
 
