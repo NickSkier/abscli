@@ -39,8 +39,8 @@ auto AppController::login() -> bool {
     }
   } while (!loginResponse["user"].contains("refreshToken"));
 
-  m_accessToken = loginResponse["user"].value("accessToken", "");
-  m_userId = loginResponse["user"].value("id", "abscli_user");
+  m_accessToken = getJsonValue(loginResponse["user"], "accessToken", "");
+  m_userId = getJsonValue(loginResponse["user"], "id", "abscli_user");
   std::cout << "accessToken: " << m_accessToken << "\n";
 
   abscli::models::User user;
@@ -48,7 +48,7 @@ auto AppController::login() -> bool {
     user.id = m_userId;
     user.username = username;
     user.absServer = m_serverUrl;
-    user.createdAt = loginResponse["user"].value("createdAt", 0);
+    user.createdAt = getJsonValue(loginResponse["user"], "createdAt", 0);
     user.accessToken = m_accessToken;
   } catch (const std::exception& e) {
     std::cerr << "Failed to parse user data from API response: " << e.what() << "\n";
