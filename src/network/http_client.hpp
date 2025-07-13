@@ -5,7 +5,7 @@
 
 using json = nlohmann::json;
 
-namespace HttpClient {
+namespace abscli::http {
   auto postRequest(const std::string& hostUrl,
                    const std::string& endpoint,
                    const std::string& payload) -> json;

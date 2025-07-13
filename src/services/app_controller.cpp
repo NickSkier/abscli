@@ -19,7 +19,7 @@ auto AppController::login() -> bool {
   do {
     std::cout << "Enter abs server url: ";
     std::cin >> serverUrl;
-  } while (!HttpClient::pingServer(serverUrl));
+  } while (!abscli::http::pingServer(serverUrl));
   do {
     m_serverUrl = serverUrl;
     std::cout << "Enter username: ";
@@ -33,7 +33,7 @@ auto AppController::login() -> bool {
     std::string credentialsJsonPayload = credentialsJsonPayloadObj.dump();
 
     try {
-      loginResponse = HttpClient::postRequest(m_serverUrl, "/login", credentialsJsonPayload);
+      loginResponse = abscli::http::postRequest(m_serverUrl, "/login", credentialsJsonPayload);
     } catch (const std::runtime_error& e) {
       std::cout << e.what() << "\n";
     }
