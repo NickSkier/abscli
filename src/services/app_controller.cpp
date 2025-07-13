@@ -57,3 +57,45 @@ auto AppController::login() -> bool {
   m_db.updateUsersTableAfterLogin(user);
   return true;
 }
+
+auto AppController::syncUserData() -> void {
+  const std::optional<json>& response = requestData("/api/me", "id");
+  if (response) {
+    const json& responseData = response.value();
+    abscli::models::User user;
+    try {
+      user.id                              = getJsonValue(responseData, "id", "");
+      user.username                        = getJsonValue(responseData, "username", "");
+      user.absServer                       = m_serverUrl;
+      user.email                           = getJsonValue(responseData, "email", "");
+      user.type                            = getJsonValue(responseData, "type", "");
+      user.seriesHideFromContinueListening = responseData.at("seriesHideFromContinueListening").dump();
+      user.bookmarks                       = responseData.at("bookmarks").dump();
+      user.isActive                        = getJsonValue(responseData, "isActive", false);
+      user.isLocked                        = getJsonValue(responseData, "isLocked", false);
+      user.lastSeen                        = getJsonValue(responseData, "lastSeen", 0);
+      user.createdAt                       = getJsonValue(responseData, "createdAt", 0);
+      user.permissions                     = responseData.at("permissions").dump();
+      user.librariesAccessible             = responseData.at("librariesAccessible").dump();
+      user.itemTagsSelected                = responseData.at("itemTagsSelected").dump();
+    } catch (const std::exception& e) {
+      std::cerr << "Failed to parse user data from API response: " << e.what() << "\n";
+      return;
+    }
+    m_db.updateUsersTable(user);
+  }
+}
+
+auto AppController::requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json> {
+  try {
+    json response;
+    response = abscli::http::getRequest(m_serverUrl, endpoint, m_accessToken);
+    if (response.contains(responseContains)) {
+      std::cout << "Successful API request for " << m_serverUrl + endpoint << "\n";
+      return response;
+    }
+  } catch (const std::runtime_error& e) {
+    std::cerr << "\033[1;31m[ERROR]\033[0m while requesting data: " << e.what() << "\n";
+ }
+  return std::nullopt;
+}

@@ -29,6 +29,18 @@ namespace {
   }
 }
 
+auto abscli::http::getRequest(const std::string& hostUrl,
+                            const std::string& endpoint,
+                            const std::string& token) -> json {
+  std::cout << hostUrl + endpoint << "\n";
+  cpr::Header header = {{"Authorization", "Bearer " + token}};
+  cpr::Response response = cpr::Get(
+    cpr::Url(hostUrl + endpoint),
+    cpr::Header(header)
+  );
+  return validateResponse(response);
+}
+
 auto abscli::http::postRequest(const std::string& hostUrl,
                              const std::string& endpoint,
                              const std::string& payload) -> json {

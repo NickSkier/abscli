@@ -8,8 +8,11 @@ public:
   AppController();
 
   auto login() -> bool;
+  void syncUserData();
 
 private:
+  auto requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json>;
+
   template<typename T>
   auto getJsonValue(const json& jsonObj, const std::string& key, const T& defaultReturn) -> T {
     if (jsonObj.contains(key) && !jsonObj[key].is_null()) {
