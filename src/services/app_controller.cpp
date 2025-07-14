@@ -45,10 +45,10 @@ auto AppController::login() -> bool {
 
   abscli::models::User user;
   try {
-    user.id = m_userId;
-    user.username = username;
-    user.absServer = m_serverUrl;
-    user.createdAt = getJsonValue(loginResponse["user"], "createdAt", 0);
+    user.id          = m_userId;
+    user.username    = username;
+    user.absServer   = m_serverUrl;
+    user.createdAt   = getJsonValue(loginResponse["user"], "createdAt", 0);
     user.accessToken = m_accessToken;
   } catch (const std::exception& e) {
     std::cerr << "Failed to parse user data from API response: " << e.what() << "\n";
@@ -64,20 +64,20 @@ auto AppController::syncUserData() -> void {
     const json& responseData = response.value();
     abscli::models::User user;
     try {
-      user.id                              = getJsonValue(responseData, "id", "");
-      user.username                        = getJsonValue(responseData, "username", "");
+      user.id                              = getJsonValue(responseData, "id",           "");
+      user.username                        = getJsonValue(responseData, "username",     "");
       user.absServer                       = m_serverUrl;
-      user.email                           = getJsonValue(responseData, "email", "");
-      user.type                            = getJsonValue(responseData, "type", "");
-      user.seriesHideFromContinueListening = responseData.at("seriesHideFromContinueListening").dump();
-      user.bookmarks                       = responseData.at("bookmarks").dump();
-      user.isActive                        = getJsonValue(responseData, "isActive", false);
-      user.isLocked                        = getJsonValue(responseData, "isLocked", false);
-      user.lastSeen                        = getJsonValue(responseData, "lastSeen", 0);
-      user.createdAt                       = getJsonValue(responseData, "createdAt", 0);
-      user.permissions                     = responseData.at("permissions").dump();
-      user.librariesAccessible             = responseData.at("librariesAccessible").dump();
-      user.itemTagsSelected                = responseData.at("itemTagsSelected").dump();
+      user.email                           = getJsonValue(responseData, "email",        "");
+      user.type                            = getJsonValue(responseData, "type",         "");
+      user.seriesHideFromContinueListening = responseData.at(           "seriesHideFromContinueListening").dump();
+      user.bookmarks                       = responseData.at(           "bookmarks").dump();
+      user.isActive                        = getJsonValue(responseData, "isActive",  false);
+      user.isLocked                        = getJsonValue(responseData, "isLocked",  false);
+      user.lastSeen                        = getJsonValue(responseData, "lastSeen",      0);
+      user.createdAt                       = getJsonValue(responseData, "createdAt",     0);
+      user.permissions                     = responseData.at(           "permissions").dump();
+      user.librariesAccessible             = responseData.at(           "librariesAccessible").dump();
+      user.itemTagsSelected                = responseData.at(           "itemTagsSelected").dump();
     } catch (const std::exception& e) {
       std::cerr << "Failed to parse user data from API response: " << e.what() << "\n";
       return;
