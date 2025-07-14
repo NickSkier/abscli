@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <set>
 #include <sqlite3.h>
 #include "statement.hpp"
 #include "db_manager.hpp"
@@ -50,8 +51,19 @@ auto abscli::db::DbManager::initDB() -> int {
                                     "itemTagsSelected                JSON,"
                                     "accessToken                     VARCHAR(255));";
 
+  const char* sqlCreateLibrariesTable = "CREATE TABLE IF NOT EXISTS libraries("
+                                    "id UUID PRIMARY                 KEY,"
+                                    "name                            VARCHAR(255),"
+                                    "displayOrder                    INTEGER,"
+                                    "icon                            VARCHAR(255),"
+                                    "mediaType                       VARCHAR(255),"
+                                    "settings                        JSON,"
+                                    "createdAt                       DATETIME NOT NULL,"
+                                    "lastUpdate                      DATETIME NOT NULL);";
+
   int responseCode;
-  responseCode = sqlite3_exec(m_absclidb, sqlCreateUsersTable, nullptr, nullptr, nullptr);
+  responseCode = sqlite3_exec(m_absclidb, sqlCreateUsersTable,     nullptr, nullptr, nullptr);
+  responseCode = sqlite3_exec(m_absclidb, sqlCreateLibrariesTable, nullptr, nullptr, nullptr);
   return responseCode;
 }
 
@@ -120,5 +132,57 @@ auto abscli::db::DbManager::updateUsersTable(const abscli::models::User& user) -
     stmt.step(m_absclidb);
   } catch (const std::exception& e) {
     std::cerr << "\033[1;31m[ERROR]\033[0m Failed to insert user " << user.id << ": " << e.what() << "\n";
+  }
+}
+
+auto abscli::db::DbManager::updateLibrariesTable(const std::vector<abscli::models::Library>& libaries) -> void {
+  std::set<std::string> jsonIds;
+  std::string libraryId;
+  try {
+    Statement stmt(m_absclidb, "INSERT INTO libraries (id, name, displayOrder, "
+                                                      "icon, mediaType, settings, "
+                                                      "createdAt, lastUpdate) "
+                                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+                                                "ON CONFLICT(id) DO UPDATE SET "
+                                                "name         = excluded.name, "
+                                                "displayOrder = excluded.displayOrder, "
+                                                "icon         = excluded.icon, "
+                                                "mediaType    = excluded.mediaType, "
+                                                "settings     = excluded.settings, "
+                                                "createdAt    = excluded.createdAt, "
+                                                "lastUpdate   = excluded.lastUpdate;"
+    );
+    for (const auto& lib : libaries) {
+      jsonIds.insert(lib.id);
+      libraryId = lib.id;
+      stmt.bind(1, lib.id);
+      stmt.bind(2, lib.name);
+      stmt.bind(3, lib.displayOrder);
+      stmt.bind(4, lib.icon);
+      stmt.bind(5, lib.mediaType);
+      stmt.bind(6, lib.settings);
+      stmt.bind(7, lib.createdAt);
+      stmt.bind(8, lib.lastUpdate);
+      stmt.step(m_absclidb);
+      stmt.reset();
+    }
+
+    std::string deleteSql = "DELETE FROM libraries WHERE id NOT in (";
+    std::string placeholders;
+    for (size_t i = 0; i < jsonIds.size(); ++i) {
+      placeholders += (i == 0 ? "?" : ", ?");
+    }
+    deleteSql += placeholders + ");";
+
+    Statement deleteStmt(m_absclidb, deleteSql);
+
+    int index = 1;
+    for (const std::string& libId : jsonIds) {
+      deleteStmt.bind(index++, libId);
+    }
+    deleteStmt.step(m_absclidb);
+
+  } catch (const std::exception& e) {
+    std::cerr << "\033[1;31m[ERROR]\033[0m Failed to insert library " << libraryId << ": " << e.what() << "\n";
   }
 }

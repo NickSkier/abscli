@@ -9,6 +9,7 @@ public:
 
   auto login() -> bool;
   void syncUserData();
+  void syncLibraries();
 
 private:
   auto requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json>;

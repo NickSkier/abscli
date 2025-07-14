@@ -86,6 +86,32 @@ auto AppController::syncUserData() -> void {
   }
 }
 
+auto AppController::syncLibraries() -> void {
+  const std::optional<json>& response = requestData("/api/libraries", "libraries");
+  if (response) {
+    const json& responseData = response.value()["libraries"];
+    std::vector<abscli::models::Library> libraries;
+    try {
+      for (const auto& library : responseData) {
+        libraries.emplace_back(abscli::models::Library{
+          .id           = getJsonValue(library, "id",           ""),
+          .name         = getJsonValue(library, "name",         ""),
+          .displayOrder = getJsonValue(library, "displayOrder",  0),
+          .icon         = getJsonValue(library, "icon",         ""),
+          .mediaType    = getJsonValue(library, "mediaType",    ""),
+          .settings     = library.at(           "settings" ).dump(),
+          .createdAt    = getJsonValue(library, "createdAt",     0),
+          .lastUpdate   = getJsonValue(library, "lastUpdate",    0)
+        });
+      }
+    } catch (const std::exception& e) {
+      std::cerr << "Failed to parse library from API response: " << e.what() << "\n";
+      return;
+    }
+    m_db.updateLibrariesTable(libraries);
+  }
+}
+
 auto AppController::requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json> {
   try {
     json response;
