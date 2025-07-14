@@ -20,7 +20,7 @@ namespace {
         throw std::runtime_error("Failed to parse JSON response: " + std::string(e.what()));
       }
     }
-    std::string errorMessage = "[ERROR] Request for URL " + std::string(httpResponse.url)
+    std::string errorMessage = "\033[1;31m[ERROR]\033[0m Request for URL " + std::string(httpResponse.url)
                                + " failed with status code: " +
                                std::to_string(httpResponse.status_code) +
                                ". Body: [" + std::string(httpResponse.text) + "]";
@@ -75,6 +75,6 @@ auto abscli::http::pingServer(const std::string& serverUrl) -> bool {
       return true;
     }
   }
-  std::cerr << "[ERROR] Failed to check \"" + serverUrl + "\" status!\n";
+  std::cerr << "\033[1;31m[ERROR]\033[0m Failed to check \"" + serverUrl + "\" status!\n";
   return false;
 }

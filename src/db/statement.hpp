@@ -23,12 +23,12 @@ namespace abscli::db {
     requires std::integral<T>
     void bind(const int index, const T& value) {
       if (sqlite3_bind_int(m_stmt, index, value) != SQLITE_OK)
-        throw std::runtime_error("[ERROR] Failed to bind intgral value.");
+        throw std::runtime_error("\033[1;31m[ERROR]\033[0m Failed to bind intgral value.");
     }
     template<typename T>
     void bind(const int index, T&& value) {
       if (sqlite3_bind_text(m_stmt, index, std::forward<T>(value).c_str(), -1, SQLITE_TRANSIENT) != SQLITE_OK)
-        throw std::runtime_error("[ERROR] Failed to bind text value.");
+        throw std::runtime_error("\033[1;31m[ERROR]\033[0m Failed to bind text value.");
     }
 
   private:

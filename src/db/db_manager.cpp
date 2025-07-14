@@ -73,7 +73,9 @@ void abscli::db::DbManager::updateUsersTableAfterLogin(const abscli::models::Use
     stmt.bind(5, user.accessToken);
     stmt.step(m_absclidb);
   } catch (const std::exception& e) {
-    std::cerr << "\033[1;31mError:\033[0m Failed to insert user " << user.id << " after login: " << e.what() << "\n";
+    std::cerr << "\033[1;31m[ERROR]\033[0m Failed to insert user " << user.id << " after login: " << e.what() << "\n";
+  }
+}
 
 auto abscli::db::DbManager::updateUsersTable(const abscli::models::User& user) -> void {
   try {
