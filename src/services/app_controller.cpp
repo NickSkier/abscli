@@ -125,3 +125,9 @@ auto AppController::requestData(const std::string& endpoint, const std::string& 
  }
   return std::nullopt;
 }
+
+auto AppController::listLibraries() -> void {
+  for (auto& library : m_db.getLibrariesNames()) {
+    std::cout << library << "\n";
+  }
+}

@@ -11,6 +11,8 @@ public:
   void syncUserData();
   void syncLibraries();
 
+  void listLibraries();
+
 private:
   auto requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json>;
 
@@ -31,4 +33,3 @@ private:
   std::string m_serverUrl;
   std::string m_accessToken;
 };
-

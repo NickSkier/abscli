@@ -67,6 +67,20 @@ auto abscli::db::DbManager::initDB() -> int {
   return responseCode;
 }
 
+auto abscli::db::DbManager::getLibrariesNames() const -> std::vector<std::string> {
+  std::vector<std::string> libraries;
+  try {
+    Statement stmt(m_absclidb, "SELECT name FROM libraries;");
+    while (stmt.step(m_absclidb)) {
+      std::string libraryName = stmt.get_column_text(0);
+      libraries.emplace_back(libraryName);
+    }
+  } catch (const std::exception& e) {
+    std::cerr << "\033[1;31m[ERROR]\033[0m Failed while collecting libraries: " << e.what() << "\n";
+  }
+  return libraries;
+}
+
 void abscli::db::DbManager::updateUsersTableAfterLogin(const abscli::models::User& user) {
   try {
     abscli::db::Statement stmt(m_absclidb, "INSERT INTO users ("
