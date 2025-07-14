@@ -21,4 +21,15 @@ namespace abscli::models {
     std::string   itemTagsSelected;
     std::string   accessToken;
   };
+
+  struct Library {
+    std::string   id;
+    std::string   name;
+    std::int32_t  displayOrder;
+    std::string   icon;
+    std::string   mediaType;
+    std::string   settings;
+    std::int64_t  createdAt;
+    std::int64_t  lastUpdate;
+  };
 }
