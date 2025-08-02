@@ -8,7 +8,7 @@
 
 using json = nlohmann::json;
 
-AppController::AppController() : m_db("abscli", "abscli.db") { }
+AppController::AppController() : m_db("abscli", "abscli.db"), m_refreshTokenStorage("com.nskier.abscli", "abscli") { }
 
 auto AppController::login() -> bool {
   std::string serverUrl;
@@ -44,6 +44,11 @@ auto AppController::login() -> bool {
     m_userId         = getJsonValue(loginResponse["user"], "id", "abscli_user");
     m_accessToken    = getJsonValue(loginResponse["user"], "accessToken",   "");
     user.createdAt   = getJsonValue(loginResponse["user"], "createdAt",      0);
+
+    const std::string& refreshToken = getJsonValue(loginResponse["user"], "refreshToken", "");
+    m_refreshTokenStorage.setToken(m_userId, refreshToken);
+
+    std::cout << "refreshToken: " << refreshToken << "\n";
     std::cout << "accessToken: " << m_accessToken << "\n";
 
     user.id          = m_userId;

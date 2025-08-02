@@ -1,7 +1,11 @@
 #pragma once
 
 #include <string>
+#include <nlohmann/json.hpp>
+#include "token_storage.hpp"
 #include "../db/db_manager.hpp"
+
+using json = nlohmann::json;
 
 class AppController {
 public:
@@ -29,6 +33,7 @@ private:
   }
 
   abscli::db::DbManager m_db;
+  abscli::TokenStorage m_refreshTokenStorage;
   std::string m_userId;
   std::string m_serverUrl;
   std::string m_accessToken;

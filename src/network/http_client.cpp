@@ -50,7 +50,10 @@ auto abscli::http::postRequest(const std::string& hostUrl,
   cpr::Body body;
 
   body = payload;
-  headers = {{"Content-Type", "application/json"}};
+  headers = {
+    {"Content-Type", "application/json"},
+    {"x-return-tokens", "true"}
+  };
 
   cpr::Response response = cpr::Post(
     cpr::Url(hostUrl + endpoint),

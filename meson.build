@@ -8,12 +8,18 @@ abscli_sources = [
   'src/db/statement.cpp',
   'src/db/db_manager.cpp',
   'src/network/http_client.cpp',
+  'src/services/token_storage.cpp',
   'src/services/app_controller.cpp',
 ]
+
+cmake = import('cmake')
+keychain_subproject = cmake.subproject('keychain')
+keychain_dep = keychain_subproject.dependency('keychain')
 
 abscli_deps = [
   dependency('cpr'),
   dependency('sqlite3'),
+  dependency('keychain'),
   dependency('nlohmann_json'),
 ]
 
