@@ -20,18 +20,6 @@ public:
 private:
   auto requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json>;
 
-  template<typename T>
-  auto getJsonValue(const json& jsonObj, const std::string& key, const T& defaultReturn) -> T {
-    if (jsonObj.contains(key) && !jsonObj[key].is_null()) {
-      return jsonObj.at(key).get<T>();
-    }
-    return defaultReturn;
-  }
-
-  auto getJsonValue(const json& jsonObj, const std::string& key, const char* defaultReturn) -> std::string {
-    return getJsonValue<std::string>(jsonObj, key, std::string(defaultReturn));
-  }
-
   abscli::db::DbManager m_db;
   abscli::TokenStorage m_refreshTokenStorage;
   std::string m_userId;

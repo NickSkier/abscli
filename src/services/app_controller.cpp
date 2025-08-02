@@ -4,6 +4,7 @@
 #include "../network/http_client.hpp"
 #include "../models/models.hpp"
 #include "../db/db_manager.hpp"
+#include "../utils/json_utils.hpp"
 #include "app_controller.hpp"
 
 using json = nlohmann::json;
@@ -41,11 +42,11 @@ auto AppController::login() -> bool {
 
   abscli::models::User user;
   try {
-    m_userId         = getJsonValue(loginResponse["user"], "id", "abscli_user");
-    m_accessToken    = getJsonValue(loginResponse["user"], "accessToken",   "");
-    user.createdAt   = getJsonValue(loginResponse["user"], "createdAt",      0);
+    m_userId         = abscli::utils::json::value(loginResponse["user"], "id", "abscli_user");
+    m_accessToken    = abscli::utils::json::value(loginResponse["user"], "accessToken",   "");
+    user.createdAt   = abscli::utils::json::value(loginResponse["user"], "createdAt",      0);
 
-    const std::string& refreshToken = getJsonValue(loginResponse["user"], "refreshToken", "");
+    const std::string& refreshToken = abscli::utils::json::value(loginResponse["user"], "refreshToken", "");
     m_refreshTokenStorage.setToken(m_userId, refreshToken);
 
     std::cout << "refreshToken: " << refreshToken << "\n";
@@ -69,20 +70,20 @@ auto AppController::syncUserData() -> void {
     const json& responseData = response.value();
     abscli::models::User user;
     try {
-      user.id                              = getJsonValue(responseData, "id",           "");
-      user.username                        = getJsonValue(responseData, "username",     "");
+      user.id                              = abscli::utils::json::value(responseData, "id",           "");
+      user.username                        = abscli::utils::json::value(responseData, "username",     "");
       user.absServer                       = m_serverUrl;
-      user.email                           = getJsonValue(responseData, "email",        "");
-      user.type                            = getJsonValue(responseData, "type",         "");
-      user.seriesHideFromContinueListening = responseData.at(           "seriesHideFromContinueListening").dump();
-      user.bookmarks                       = responseData.at(           "bookmarks").dump();
-      user.isActive                        = getJsonValue(responseData, "isActive",  false);
-      user.isLocked                        = getJsonValue(responseData, "isLocked",  false);
-      user.lastSeen                        = getJsonValue(responseData, "lastSeen",      0);
-      user.createdAt                       = getJsonValue(responseData, "createdAt",     0);
-      user.permissions                     = responseData.at(           "permissions").dump();
-      user.librariesAccessible             = responseData.at(           "librariesAccessible").dump();
-      user.itemTagsSelected                = responseData.at(           "itemTagsSelected").dump();
+      user.email                           = abscli::utils::json::value(responseData, "email",        "");
+      user.type                            = abscli::utils::json::value(responseData, "type",         "");
+      user.seriesHideFromContinueListening = responseData.at(                         "seriesHideFromContinueListening").dump();
+      user.bookmarks                       = responseData.at(                         "bookmarks").dump();
+      user.isActive                        = abscli::utils::json::value(responseData, "isActive",  false);
+      user.isLocked                        = abscli::utils::json::value(responseData, "isLocked",  false);
+      user.lastSeen                        = abscli::utils::json::value(responseData, "lastSeen",      0);
+      user.createdAt                       = abscli::utils::json::value(responseData, "createdAt",     0);
+      user.permissions                     = responseData.at(                         "permissions").dump();
+      user.librariesAccessible             = responseData.at(                         "librariesAccessible").dump();
+      user.itemTagsSelected                = responseData.at(                         "itemTagsSelected").dump();
     } catch (const std::exception& e) {
       std::cerr << "Failed to parse user data from API response: " << e.what() << "\n";
       return;
@@ -99,14 +100,14 @@ auto AppController::syncLibraries() -> void {
     try {
       for (const auto& library : responseData) {
         libraries.emplace_back(abscli::models::Library{
-          .id           = getJsonValue(library, "id",           ""),
-          .name         = getJsonValue(library, "name",         ""),
-          .displayOrder = getJsonValue(library, "displayOrder",  0),
-          .icon         = getJsonValue(library, "icon",         ""),
-          .mediaType    = getJsonValue(library, "mediaType",    ""),
-          .settings     = library.at(           "settings" ).dump(),
-          .createdAt    = getJsonValue(library, "createdAt",     0),
-          .lastUpdate   = getJsonValue(library, "lastUpdate",    0)
+          .id           = abscli::utils::json::value(library, "id",           ""),
+          .name         = abscli::utils::json::value(library, "name",         ""),
+          .displayOrder = abscli::utils::json::value(library, "displayOrder",  0),
+          .icon         = abscli::utils::json::value(library, "icon",         ""),
+          .mediaType    = abscli::utils::json::value(library, "mediaType",    ""),
+          .settings     = library.at(                         "settings" ).dump(),
+          .createdAt    = abscli::utils::json::value(library, "createdAt",     0),
+          .lastUpdate   = abscli::utils::json::value(library, "lastUpdate",    0)
         });
       }
     } catch (const std::exception& e) {
