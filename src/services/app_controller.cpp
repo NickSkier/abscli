@@ -137,3 +137,8 @@ auto AppController::listLibraries() -> void {
     std::cout << library << "\n";
   }
 }
+auto AppController::listUsers() -> void {
+  for (auto& username : m_db.getUserNames()) {
+    std::cout << username << "\n";
+  }
+}

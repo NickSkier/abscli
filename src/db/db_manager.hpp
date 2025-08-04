@@ -14,6 +14,7 @@ namespace abscli::db {
     ~DbManager();
 
     auto getLibrariesNames() const -> std::vector<std::string>;
+    auto getUserNames() const -> std::vector<std::string>;
 
     void updateUsersTableAfterLogin(const abscli::models::User& user);
     void updateUsersTable(const abscli::models::User& user);

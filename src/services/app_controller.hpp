@@ -16,6 +16,7 @@ public:
   void syncLibraries();
 
   void listLibraries();
+  void listUsers();
 
 private:
   auto requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json>;

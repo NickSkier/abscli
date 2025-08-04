@@ -81,6 +81,20 @@ auto abscli::db::DbManager::getLibrariesNames() const -> std::vector<std::string
   return libraries;
 }
 
+auto abscli::db::DbManager::getUserNames() const -> std::vector<std::string> {
+  std::vector<std::string> usernames;
+  try {
+    Statement stmt(m_absclidb, "SELECT username FROM users;");
+    while (stmt.step(m_absclidb)) {
+      std::string username = stmt.get_column_text(0);
+      usernames.emplace_back(username);
+    }
+  } catch (const std::exception& e) {
+    std::cerr << "\033[1;31m[ERROR]\033[0m Failed while collecting usernames: " << e.what() << "\n";
+  }
+  return usernames;
+}
+
 void abscli::db::DbManager::updateUsersTableAfterLogin(const abscli::models::User& user) {
   try {
     abscli::db::Statement stmt(m_absclidb, "INSERT INTO users ("
