@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <nlohmann/json.hpp>
 #include "token_storage.hpp"
 #include "../db/db_manager.hpp"
@@ -16,7 +17,7 @@ public:
   void syncLibraries();
 
   void listLibraries();
-  void listUsers();
+  static void listItems(const std::vector<std::string>& vec);
 
 private:
   auto requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json>;

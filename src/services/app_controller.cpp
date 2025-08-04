@@ -1,6 +1,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <string>
+#include <vector>
 #include "../network/http_client.hpp"
 #include "../models/models.hpp"
 #include "../db/db_manager.hpp"
@@ -137,8 +138,10 @@ auto AppController::listLibraries() -> void {
     std::cout << library << "\n";
   }
 }
-auto AppController::listUsers() -> void {
-  for (auto& username : m_db.getUserNames()) {
-    std::cout << username << "\n";
+
+auto AppController::listItems(const std::vector<std::string>& vec) -> void {
+  int index = 0;
+  for (const auto& item : vec) {
+    std::cout << "[" << index++ << "] " <<  item << "\n";
   }
 }
