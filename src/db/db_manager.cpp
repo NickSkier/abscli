@@ -95,6 +95,28 @@ auto abscli::db::DbManager::getUserNames() const -> std::vector<std::string> {
   return usernames;
 }
 
+auto abscli::db::DbManager::getUserColumnValue(const std::string& username, const std::string& columnName) -> std::optional<std::string> {
+  std::array allowedColums = {"id", "username", "absServer", "accessToken"};
+  if (std::ranges::find(allowedColums, columnName) == std::ranges::end(allowedColums)) {
+    std::cerr << "\033[1;31mERROR:\033[0m Invalid or forbidden column name specified for search: [" << columnName  << "] in [users]\n";
+    return std::nullopt;
+  }
+  try {
+    std::string sql = "SELECT " + columnName + " FROM users WHERE username = ?;";
+    Statement stmt(m_absclidb, sql);
+    stmt.bind(1, username);
+    if (stmt.step(m_absclidb)) {
+      std::cout << "User's " + columnName + " found!\n";
+      return stmt.get_column_text(0);
+    }
+    std::cout << "User's " + columnName + " not found!\n";
+    return std::nullopt;
+  } catch (const std::exception& e) {
+    std::cerr << "\033[1;31mERROR:\033[0m Failed during user's " + columnName + " search: " << e.what() << "\n";
+  }
+  return std::nullopt;
+}
+
 void abscli::db::DbManager::updateUsersTableAfterLogin(const abscli::models::User& user) {
   try {
     abscli::db::Statement stmt(m_absclidb, "INSERT INTO users ("

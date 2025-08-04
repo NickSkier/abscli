@@ -10,7 +10,59 @@
 
 using json = nlohmann::json;
 
-AppController::AppController() : m_db("abscli", "abscli.db"), m_refreshTokenStorage("com.nskier.abscli", "abscli") { }
+AppController::AppController() : m_db("abscli", "abscli.db"), m_refreshTokenStorage("com.nskier.abscli", "abscli") {
+  auto usernames = m_db.getUserNames();
+  if (usernames.empty()) { login(); }
+  else {
+    listItems(usernames);
+    int usernameSelection;
+    std::cout << "Select user profile: ";
+    std::cin >> usernameSelection;
+    std::string username = usernames[usernameSelection];
+
+    std::optional<std::string> serverUrl, userId;
+    do {
+      serverUrl = m_db.getUserColumnValue(username, "absServer");
+      userId = m_db.getUserColumnValue(username, "id");
+      if (serverUrl && userId && abscli::http::pingServer(serverUrl.value())) {
+        m_serverUrl = serverUrl.value();
+        m_userId = userId.value();
+        requestNewTokens();
+      }
+      else { login(); }
+    } while (!(serverUrl && userId));
+  }
+
+  syncUserData();
+}
+
+auto AppController::requestNewTokens() -> void {
+  try {
+    const std::optional<std::string>& refreshToken = m_refreshTokenStorage.getToken(m_userId);
+    if (!refreshToken) {
+      std::cout << "You need to login again" << "\n";
+      login();
+      return;
+    }
+
+    json response = abscli::http::postRequest(m_serverUrl, "/auth/refresh", refreshToken.value(), true);
+    if (!response["user"].contains("refreshToken")) {
+      std::cout << "You need to login again" << "\n";
+      login();
+      return;
+    }
+
+    const std::string& newRefreshToken = abscli::utils::json::value(response["user"], "refreshToken", "");
+    m_refreshTokenStorage.setToken(m_userId, newRefreshToken);
+
+    abscli::models::User user;
+    m_userId = abscli::utils::json::value(response["user"], "id", "");
+    m_accessToken = abscli::utils::json::value(response["user"], "accessToken", "");
+
+  } catch (const std::runtime_error& e) {
+    std::cerr << "\033[1;31m[ERROR]\033[0m while requesting new tokens: " << e.what() << "\n";
+  }
+}
 
 auto AppController::login() -> bool {
   std::string serverUrl;

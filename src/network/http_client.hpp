@@ -12,7 +12,8 @@ namespace abscli::http {
 
   auto postRequest(const std::string& hostUrl,
                    const std::string& endpoint,
-                   const std::string& payload) -> json;
+                   const std::string& payloadOrToken,
+                   bool isRefresh = false) -> json;
 
   auto pingServer(const std::string& serverUrl) -> bool;
 }

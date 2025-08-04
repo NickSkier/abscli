@@ -12,6 +12,7 @@ class AppController {
 public:
   AppController();
 
+  void requestNewTokens();
   auto login() -> bool;
   void syncUserData();
   void syncLibraries();

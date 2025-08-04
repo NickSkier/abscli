@@ -14,6 +14,7 @@ int main(int argc, char **argv) {
                    "Sync user data (2)\n"
                    "Sync libraries (3)\n"
                    "List libraries (4)\n"
+                   "Get new tokens (5)\n"
                    "Exit           (0)\n"
                    "Enter: ";
     int choice;
@@ -24,6 +25,7 @@ int main(int argc, char **argv) {
     case 2: appController.syncUserData(); break;
     case 3: appController.syncLibraries(); break;
     case 4: appController.listLibraries(); break;
+    case 5: appController.requestNewTokens(); break;
     case 0: appLoop = false; break;
     default: std::cout << "Wrong number\n"; break;
     }

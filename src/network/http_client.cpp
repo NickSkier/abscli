@@ -11,7 +11,7 @@ using json = nlohmann::json;
 namespace {
   auto validateResponse(const cpr::Response& httpResponse) -> json {
     json response;
-    if (httpResponse.status_code >= 200 && httpResponse.status_code < 300) {
+    if ((httpResponse.status_code >= 200 && httpResponse.status_code < 300) || httpResponse.status_code == 401) {
       if (httpResponse.text.empty()) { return json{}; }
       std::cout << "Successful request!\n" << "\n";
       try {
@@ -42,18 +42,24 @@ auto abscli::http::getRequest(const std::string& hostUrl,
 }
 
 auto abscli::http::postRequest(const std::string& hostUrl,
-                             const std::string& endpoint,
-                             const std::string& payload) -> json {
+                               const std::string& endpoint,
+                               const std::string& payloadOrToken,
+                               const bool isRefresh) -> json {
   std::cout << hostUrl + endpoint << "\n";
 
   cpr::Header headers;
   cpr::Body body;
 
-  body = payload;
-  headers = {
-    {"Content-Type", "application/json"},
-    {"x-return-tokens", "true"}
-  };
+  if (isRefresh) {
+    headers["x-refresh-token"] = payloadOrToken;
+  }
+  else {
+    body = payloadOrToken;
+    headers = {
+      {"Content-Type", "application/json"},
+      {"x-return-tokens", "true"}
+    };
+  }
 
   cpr::Response response = cpr::Post(
     cpr::Url(hostUrl + endpoint),
