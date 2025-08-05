@@ -19,6 +19,7 @@ public:
 
   void listLibraries();
   static void listItems(const std::vector<std::string>& vec);
+  static void listItems(const std::vector<std::vector<std::string>>& vec);
 
 private:
   auto requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json>;

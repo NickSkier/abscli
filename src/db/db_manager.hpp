@@ -13,8 +13,7 @@ namespace abscli::db {
     DbManager(const std::string& dbDir, const std::string& dbFilename);
     ~DbManager();
 
-    auto getLibrariesNames() const -> std::vector<std::string>;
-    auto getUserNames() const -> std::vector<std::string>;
+    auto getColumnValuesFromTable(std::string columnName, std::string tableName) const -> std::vector<std::string>;
 
     auto getUserColumnValue(const std::string& username, const std::string& columnName) -> std::optional<std::string>;
 

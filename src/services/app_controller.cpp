@@ -11,10 +11,12 @@
 using json = nlohmann::json;
 
 AppController::AppController() : m_db("abscli", "abscli.db"), m_refreshTokenStorage("com.nskier.abscli", "abscli") {
-  auto usernames = m_db.getUserNames();
+  auto usernames = m_db.getColumnValuesFromTable("username", "users");
+  auto serversUrls = m_db.getColumnValuesFromTable("absServer", "users");
+  auto userIds = m_db.getColumnValuesFromTable("id", "users");
   if (usernames.empty()) { login(); }
   else {
-    listItems(usernames);
+    listItems({ usernames, serversUrls });
     int usernameSelection;
     std::cout << "Select user profile: ";
     std::cin >> usernameSelection;
@@ -186,14 +188,24 @@ auto AppController::requestData(const std::string& endpoint, const std::string& 
 }
 
 auto AppController::listLibraries() -> void {
-  for (auto& library : m_db.getLibrariesNames()) {
-    std::cout << library << "\n";
-  }
+  auto librariesNames = m_db.getColumnValuesFromTable("name", "libraries");
+  auto librariesTypes = m_db.getColumnValuesFromTable("mediaType", "libraries");
+  listItems({ librariesNames, librariesTypes });
 }
 
 auto AppController::listItems(const std::vector<std::string>& vec) -> void {
   int index = 0;
   for (const auto& item : vec) {
-    std::cout << "[" << index++ << "] " <<  item << "\n";
+    std::cout << index++ << " " << item << "\n";
+  }
+}
+
+auto AppController::listItems(const std::vector<std::vector<std::string>>& vec2D) -> void {
+  for (size_t i = 0; i < vec2D[0].size(); ++i) {
+    std::cout << i << " ";
+    for (const auto& vec : vec2D) {
+      std::cout << vec[i] << " ";
+    }
+    std::cout << "\n";
   }
 }

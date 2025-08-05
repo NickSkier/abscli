@@ -67,32 +67,18 @@ auto abscli::db::DbManager::initDB() -> int {
   return responseCode;
 }
 
-auto abscli::db::DbManager::getLibrariesNames() const -> std::vector<std::string> {
-  std::vector<std::string> libraries;
+auto abscli::db::DbManager::getColumnValuesFromTable(std::string columnName, std::string tableName) const -> std::vector<std::string> {
+  std::vector<std::string> values;
   try {
-    Statement stmt(m_absclidb, "SELECT name FROM libraries;");
+    Statement stmt(m_absclidb, "SELECT " + columnName + " FROM " + tableName +  ";");
     while (stmt.step(m_absclidb)) {
-      std::string libraryName = stmt.get_column_text(0);
-      libraries.emplace_back(libraryName);
+      std::string value = stmt.get_column_text(0);
+      values.emplace_back(value);
     }
   } catch (const std::exception& e) {
-    std::cerr << "\033[1;31m[ERROR]\033[0m Failed while collecting libraries: " << e.what() << "\n";
+    std::cerr << "\033[1;31m[ERROR]\033[0m Failed while collecting [" + columnName + "] form [" + tableName + "]: " << e.what() << "\n";
   }
-  return libraries;
-}
-
-auto abscli::db::DbManager::getUserNames() const -> std::vector<std::string> {
-  std::vector<std::string> usernames;
-  try {
-    Statement stmt(m_absclidb, "SELECT username FROM users;");
-    while (stmt.step(m_absclidb)) {
-      std::string username = stmt.get_column_text(0);
-      usernames.emplace_back(username);
-    }
-  } catch (const std::exception& e) {
-    std::cerr << "\033[1;31m[ERROR]\033[0m Failed while collecting usernames: " << e.what() << "\n";
-  }
-  return usernames;
+  return values;
 }
 
 auto abscli::db::DbManager::getUserColumnValue(const std::string& username, const std::string& columnName) -> std::optional<std::string> {
