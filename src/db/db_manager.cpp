@@ -61,9 +61,29 @@ auto abscli::db::DbManager::initDB() -> int {
                                     "createdAt                       DATETIME NOT NULL,"
                                     "lastUpdate                      DATETIME NOT NULL);";
 
+  const char* sqlCreateLibraryItems = "CREATE TABLE IF NOT EXISTS libraryItems("
+                                    "id UUID PRIMARY                 KEY,"
+                                    "ino                             VARCHAR(255),"
+                                    "libraryId UUID                  KEY,"
+                                    "folderId UUID                   KEY,"
+                                    "path                            VARCHAR(255),"
+                                    "relPath                         VARCHAR(255),"
+                                    "isFile                          TINYINT(1),"
+                                    "mtimeMs                         DATETIME,"
+                                    "ctimeMs                         DATETIME,"
+                                    "birthtimeMs                     DATETIME,"
+                                    "addedAt                         DATETIME,"
+                                    "updatedAt                       DATETIME,"
+                                    "isMissing                       TINYINT(1),"
+                                    "isInvalid                       TINYINT(1),"
+                                    "mediaType                       VARCHAR(255),"
+                                    "numFiles                        INTEGER,"
+                                    "size                            BIGINT);";
+
   int responseCode;
   responseCode = sqlite3_exec(m_absclidb, sqlCreateUsersTable,     nullptr, nullptr, nullptr);
   responseCode = sqlite3_exec(m_absclidb, sqlCreateLibrariesTable, nullptr, nullptr, nullptr);
+  responseCode = sqlite3_exec(m_absclidb, sqlCreateLibraryItems,   nullptr, nullptr, nullptr);
   return responseCode;
 }
 
@@ -220,5 +240,79 @@ auto abscli::db::DbManager::updateLibrariesTable(const std::vector<abscli::model
 
   } catch (const std::exception& e) {
     std::cerr << "\033[1;31m[ERROR]\033[0m Failed to insert library " << libraryId << ": " << e.what() << "\n";
+  }
+}
+
+auto abscli::db::DbManager::updateLibraryItemsTable(const std::vector<std::vector<abscli::models::LibraryItem>>& libaryItems) -> void {
+  std::set<std::string> jsonIds;
+  std::string libraryItemId;
+  try {
+  Statement stmt(m_absclidb, "INSERT INTO libraryItems (id, ino, libraryId, folderId, "
+                                                        "path, relPath, isFile, mtimeMs, "
+                                                        "ctimeMs, birthtimeMs, addedAt, updatedAt, "
+                                                        "isMissing, isInvalid, mediaType, numFiles, size) "
+                                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " 
+                                            "ON CONFLICT(id) DO UPDATE SET "
+                                            "ino         = excluded.ino, "
+                                            "libraryId   = excluded.libraryId, "
+                                            "folderId    = excluded.folderId, "
+                                            "path        = excluded.path, "
+                                            "relPath     = excluded.relPath, "
+                                            "isFile      = excluded.isFile, "
+                                            "mtimeMs     = excluded.mtimeMs, "
+                                            "ctimeMs     = excluded.ctimeMs, "
+                                            "birthtimeMs = excluded.birthtimeMs, "
+                                            "addedAt     = excluded.addedAt, "
+                                            "updatedAt   = excluded.updatedAt, "
+                                            "isMissing   = excluded.isMissing, "
+                                            "isInvalid   = excluded.isInvalid, "
+                                            "mediaType   = excluded.mediaType, "
+                                            "numFiles    = excluded.numFiles, "
+                                            "size        = excluded.size;"
+    );
+    for (const auto& library : libaryItems) {
+      for (const auto& libItem : library) {
+        std::cout << "Inserting " << libItem.relPath << "\n";
+        jsonIds.insert(libItem.id);
+        libraryItemId = libItem.id;
+        stmt.bind(1,  libItem.id);
+        stmt.bind(2,  libItem.ino);
+        stmt.bind(3,  libItem.libraryId);
+        stmt.bind(4,  libItem.folderId);
+        stmt.bind(5,  libItem.path);
+        stmt.bind(6,  libItem.relPath);
+        stmt.bind(7,  libItem.isFile);
+        stmt.bind(8,  libItem.mtimeMs);
+        stmt.bind(9,  libItem.ctimeMs);
+        stmt.bind(10, libItem.birthtimeMs);
+        stmt.bind(11, libItem.addedAt);
+        stmt.bind(12, libItem.updatedAt);
+        stmt.bind(13, libItem.isMissing);
+        stmt.bind(14, libItem.isInvalid);
+        stmt.bind(15, libItem.mediaType);
+        stmt.bind(16, libItem.numFiles);
+        stmt.bind(17, libItem.size);
+        stmt.step(m_absclidb);
+        stmt.reset();
+      }
+    }
+
+    std::string deleteSql = "DELETE FROM libraryItems WHERE id NOT in (";
+    std::string placeholders;
+    for (size_t i = 0; i < jsonIds.size(); ++i) {
+      placeholders += (i == 0 ? "?" : ", ?");
+    }
+    deleteSql += placeholders + ");";
+
+    Statement deleteStmt(m_absclidb, deleteSql);
+
+    int index = 1;
+    for (const std::string& libItemId : jsonIds) {
+      deleteStmt.bind(index++, libItemId);
+    }
+    deleteStmt.step(m_absclidb);
+
+  } catch (const std::exception& e) {
+    std::cerr << "\033[1;31m[ERROR]\033[0m Failed to insert libraryItem " << libraryItemId << ": " << e.what() << "\n";
   }
 }

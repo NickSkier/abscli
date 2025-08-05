@@ -173,6 +173,47 @@ auto AppController::syncLibraries() -> void {
   }
 }
 
+auto AppController::syncLibrariesItems() -> void {
+  auto librariesIds = m_db.getColumnValuesFromTable("id", "libraries");
+
+  std::vector<std::vector<abscli::models::LibraryItem>> libraryItems;
+
+  for (size_t libIndex = 0; libIndex < librariesIds.size(); libIndex++) {
+    const std::optional<json>& response = requestData("/api/libraries/" + librariesIds[libIndex] + "/items", "results");
+    if (response) {
+      const json& responseData = response.value()["results"];
+      libraryItems.emplace_back();
+      try {
+        for (const auto& libraryItem : responseData) {
+          libraryItems[libIndex].emplace_back(abscli::models::LibraryItem{
+            .id          = abscli::utils::json::value(libraryItem, "id"          , ""),
+            .ino         = abscli::utils::json::value(libraryItem, "ino"         , ""),
+            .libraryId   = abscli::utils::json::value(libraryItem, "libraryId"   , ""),
+            .folderId    = abscli::utils::json::value(libraryItem, "folderId"    , ""),
+            .path        = abscli::utils::json::value(libraryItem, "path"        , ""),
+            .relPath     = abscli::utils::json::value(libraryItem, "relPath"     , ""),
+            .isFile      = abscli::utils::json::value(libraryItem, "isFile"      , false),
+            .mtimeMs     = abscli::utils::json::value(libraryItem, "mtimeMs"     , 0),
+            .ctimeMs     = abscli::utils::json::value(libraryItem, "ctimeMs"     , 0),
+            .birthtimeMs = abscli::utils::json::value(libraryItem, "birthtimeMs" , 0),
+            .addedAt     = abscli::utils::json::value(libraryItem, "addedAt"     , 0),
+            .updatedAt   = abscli::utils::json::value(libraryItem, "updatedAt"   , 0),
+            .isMissing   = abscli::utils::json::value(libraryItem, "isMissing"   , false),
+            .isInvalid   = abscli::utils::json::value(libraryItem, "isInvalid"   , false),
+            .mediaType   = abscli::utils::json::value(libraryItem, "mediaType"   , ""),
+            .numFiles    = abscli::utils::json::value(libraryItem, "numFiles"    , 0),
+            .size        = abscli::utils::json::value(libraryItem, "size"        , 0)
+          });
+        }
+      } catch (const std::exception& e) {
+        std::cerr << "Failed to parse library from API response: " << e.what() << "\n";
+        return;
+      }
+    }
+  }
+  m_db.updateLibraryItemsTable(libraryItems);
+}
+
 auto AppController::requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json> {
   try {
     json response;
@@ -191,6 +232,12 @@ auto AppController::listLibraries() -> void {
   auto librariesNames = m_db.getColumnValuesFromTable("name", "libraries");
   auto librariesTypes = m_db.getColumnValuesFromTable("mediaType", "libraries");
   listItems({ librariesNames, librariesTypes });
+}
+
+auto AppController::listLibraryItems() -> void {
+  auto libraryItemTitle     = m_db.getColumnValuesFromTable("relPath", "libraryItems");
+  auto libraryItemMediaType = m_db.getColumnValuesFromTable("mediaType", "libraryItems");
+  listItems({ libraryItemTitle, libraryItemMediaType });
 }
 
 auto AppController::listItems(const std::vector<std::string>& vec) -> void {

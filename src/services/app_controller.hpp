@@ -16,8 +16,11 @@ public:
   auto login() -> bool;
   void syncUserData();
   void syncLibraries();
+  void syncLibrariesItems();
 
   void listLibraries();
+  void listLibraryItems();
+
   static void listItems(const std::vector<std::string>& vec);
   static void listItems(const std::vector<std::vector<std::string>>& vec);
 
