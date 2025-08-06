@@ -277,6 +277,13 @@ auto AppController::listLibraryItems() -> void {
   listItems({ libraryItemTitle, libraryItemMediaType });
 }
 
+auto AppController::listBooks() -> void {
+  auto bookTitle         = m_db.getColumnValuesFromTable("title", "books");
+  auto bookPublishedDate = m_db.getColumnValuesFromTable("publishedDate", "books");
+  auto bookEbookFormat   = m_db.getColumnValuesFromTable("ebookFormat", "books");
+  listItems({ bookTitle, bookPublishedDate, bookEbookFormat });
+}
+
 auto AppController::listItems(const std::vector<std::string>& vec) -> void {
   int index = 0;
   for (const auto& item : vec) {

@@ -20,6 +20,7 @@ public:
 
   void listLibraries();
   void listLibraryItems();
+  void listBooks();
 
   static void listItems(const std::vector<std::string>& vec);
   static void listItems(const std::vector<std::vector<std::string>>& vec);

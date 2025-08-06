@@ -16,7 +16,8 @@ int main(int argc, char **argv) {
                    "Sync libraryItems (4)\n"
                    "List libraries    (5)\n"
                    "List libraryItems (6)\n"
-                   "Get new tokens    (7)\n"
+                   "List books        (7)\n"
+                   "Get new tokens    (8)\n"
                    "Exit              (0)\n"
                    "Enter: ";
     int choice;
@@ -29,7 +30,8 @@ int main(int argc, char **argv) {
     case 4: appController.syncLibrariesItems(); break;
     case 5: appController.listLibraries(); break;
     case 6: appController.listLibraryItems(); break;
-    case 7: appController.requestNewTokens(); break;
+    case 7: appController.listBooks(); break;
+    case 8: appController.requestNewTokens(); break;
     case 0: appLoop = false; break;
     default: std::cout << "Wrong number\n"; break;
     }
