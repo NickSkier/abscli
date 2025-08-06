@@ -52,4 +52,33 @@ namespace abscli::models {
     std::int32_t  numFiles;
     std::int64_t  size;
   };
+
+  struct Book {
+    std::string   id;
+    std::string   title;
+    std::string   titleIgnorePrefix;
+    std::string   subtitle;
+    std::string   authorName;
+    std::string   authorNameLF;
+    std::string   narratorName;
+    std::string   seriesName;
+    std::string   genres;
+    std::string   publishedYear;
+    std::string   publishedDate;
+    std::string   publisher;
+    std::string   description;
+    std::string   isbn;
+    std::string   asin;
+    std::string   language;
+    // bool          explicit;
+    bool          abridged;
+    std::string   coverPath;
+    std::string   tags;
+    std::int32_t  numTracks;
+    std::int32_t  numAudioFiles;
+    std::int32_t  numChapters;
+    float         duration;
+    std::int64_t  size;
+    std::string   ebookFormat;
+  };
 }

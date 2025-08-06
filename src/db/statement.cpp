@@ -27,4 +27,8 @@ auto abscli::db::Statement::get_column_int(int col) -> int {
   return sqlite3_column_int(m_stmt, col);
 }
 
+auto abscli::db::Statement::get_column_double(int col) -> double {
+  return sqlite3_column_double(m_stmt, col);
+}
+
 void abscli::db::Statement::reset() { sqlite3_reset(m_stmt); }

@@ -175,8 +175,10 @@ auto AppController::syncLibraries() -> void {
 
 auto AppController::syncLibrariesItems() -> void {
   auto librariesIds = m_db.getColumnValuesFromTable("id", "libraries");
+  auto librariesMediaType = m_db.getColumnValuesFromTable("mediaType", "libraries");
 
   std::vector<std::vector<abscli::models::LibraryItem>> libraryItems;
+  std::vector<abscli::models::Book> books;
 
   for (size_t libIndex = 0; libIndex < librariesIds.size(); libIndex++) {
     const std::optional<json>& response = requestData("/api/libraries/" + librariesIds[libIndex] + "/items", "results");
@@ -204,6 +206,40 @@ auto AppController::syncLibrariesItems() -> void {
             .numFiles    = abscli::utils::json::value(libraryItem, "numFiles"    , 0),
             .size        = abscli::utils::json::value(libraryItem, "size"        , 0)
           });
+          if (librariesMediaType[libIndex] == "book"
+              && libraryItem.contains("media")
+              && libraryItem["media"].contains("metadata")
+             ) {
+            const json& itemMedia = libraryItem["media"];
+            const auto& itemMetadata = itemMedia["metadata"];
+            books.emplace_back(abscli::models::Book{
+              .id                = abscli::utils::json::value(itemMedia,    "id"              , ""),
+              .title             = abscli::utils::json::value(itemMetadata, "title"            , ""),
+              .titleIgnorePrefix = abscli::utils::json::value(itemMetadata, "titleIgnorePrefix", ""),
+              .subtitle          = abscli::utils::json::value(itemMetadata, "subtitle"         , ""),
+              .authorName        = abscli::utils::json::value(itemMetadata, "authorName"       , ""),
+              .authorNameLF      = abscli::utils::json::value(itemMetadata, "authorNameLF"     , ""),
+              .narratorName      = abscli::utils::json::value(itemMetadata, "narratorName"     , ""),
+              .seriesName        = abscli::utils::json::value(itemMetadata, "seriesName"       , ""),
+              .genres            =                            itemMetadata.at("genres").dump(),
+              .publishedYear     = abscli::utils::json::value(itemMetadata, "publishedYear"    , ""),
+              .publishedDate     = abscli::utils::json::value(itemMetadata, "publishedDate"    , ""),
+              .publisher         = abscli::utils::json::value(itemMetadata, "publisher"        , ""),
+              .description       = abscli::utils::json::value(itemMetadata, "description"      , ""),
+              .isbn              = abscli::utils::json::value(itemMetadata, "isbn"             , ""),
+              .asin              = abscli::utils::json::value(itemMetadata, "asin"             , ""),
+              .language          = abscli::utils::json::value(itemMetadata, "language"         , ""),
+              .abridged          = abscli::utils::json::value(itemMetadata, "abridged"         , false),
+              .coverPath         = abscli::utils::json::value(itemMedia,    "coverPath"       , ""),
+              .tags              =                            itemMedia.at("tags").dump(),
+              .numTracks         = abscli::utils::json::value(itemMedia,    "numTracks"       , 0),
+              .numAudioFiles     = abscli::utils::json::value(itemMedia,    "numAudioFiles"   , 0),
+              .numChapters       = abscli::utils::json::value(itemMedia,    "numChapters"     , 0),
+              .duration          = abscli::utils::json::value(itemMedia,    "duration"        , 0.0f),
+              .size              = abscli::utils::json::value(itemMedia,    "size"            , 0),
+              .ebookFormat       = abscli::utils::json::value(itemMedia,    "ebookFormat"     , "")
+            });
+          }
         }
       } catch (const std::exception& e) {
         std::cerr << "Failed to parse library from API response: " << e.what() << "\n";
@@ -212,6 +248,7 @@ auto AppController::syncLibrariesItems() -> void {
     }
   }
   m_db.updateLibraryItemsTable(libraryItems);
+  m_db.updateBooksTable(books);
 }
 
 auto AppController::requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json> {

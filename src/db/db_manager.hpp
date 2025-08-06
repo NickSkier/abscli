@@ -21,6 +21,7 @@ namespace abscli::db {
     void updateUsersTable(const abscli::models::User& user);
     void updateLibrariesTable(const std::vector<abscli::models::Library>& libaries);
     void updateLibraryItemsTable(const std::vector<std::vector<abscli::models::LibraryItem>>& libaryItems);
+    void updateBooksTable(const std::vector<abscli::models::Book>& books);
 
   private:
     auto openDB(const std::string& dbPath, const std::string& dbFilename) -> int;

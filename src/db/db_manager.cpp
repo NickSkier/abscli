@@ -80,10 +80,39 @@ auto abscli::db::DbManager::initDB() -> int {
                                     "numFiles                        INTEGER,"
                                     "size                            BIGINT);";
 
+  const char* sqlCreateBooks = "CREATE TABLE IF NOT EXISTS books("
+                                    "id UUID PRIMARY                 KEY,"
+                                    "title                           VARCHAR(255),"
+                                    "titleIgnorePrefix               VARCHAR(255),"
+                                    "subtitle                        VARCHAR(255),"
+                                    "authorName                      VARCHAR(255),"
+                                    "authorNameLF                    VARCHAR(255),"
+                                    "narratorName                    VARCHAR(255),"
+                                    "seriesName                      VARCHAR(255),"
+                                    "genres                          JSON,"
+                                    "publishedYear                   VARCHAR(255),"
+                                    "publishedDate                   VARCHAR(255),"
+                                    "publisher                       VARCHAR(255),"
+                                    "description                     TEXT,"
+                                    "isbn                            VARCHAR(255),"
+                                    "asin                            VARCHAR(255),"
+                                    "language                        VARCHAR(255),"
+                                    "explicit                        TINYINT(1),"
+                                    "abridged                        TINYINT(1),"
+                                    "coverPath                       VARCHAR(255),"
+                                    "tags                            JSON,"
+                                    "numTracks                       INTEGER,"
+                                    "numAudioFiles                   INTEGER,"
+                                    "numChapters                     INTEGER,"
+                                    "duration                        FLOAT,"
+                                    "size                            BIGINT,"
+                                    "ebookFormat                     VARCHAR(255));";
+
   int responseCode;
   responseCode = sqlite3_exec(m_absclidb, sqlCreateUsersTable,     nullptr, nullptr, nullptr);
   responseCode = sqlite3_exec(m_absclidb, sqlCreateLibrariesTable, nullptr, nullptr, nullptr);
   responseCode = sqlite3_exec(m_absclidb, sqlCreateLibraryItems,   nullptr, nullptr, nullptr);
+  responseCode = sqlite3_exec(m_absclidb, sqlCreateBooks,          nullptr, nullptr, nullptr);
   return responseCode;
 }
 
@@ -272,7 +301,6 @@ auto abscli::db::DbManager::updateLibraryItemsTable(const std::vector<std::vecto
     );
     for (const auto& library : libaryItems) {
       for (const auto& libItem : library) {
-        std::cout << "Inserting " << libItem.relPath << "\n";
         jsonIds.insert(libItem.id);
         libraryItemId = libItem.id;
         stmt.bind(1,  libItem.id);
@@ -314,5 +342,95 @@ auto abscli::db::DbManager::updateLibraryItemsTable(const std::vector<std::vecto
 
   } catch (const std::exception& e) {
     std::cerr << "\033[1;31m[ERROR]\033[0m Failed to insert libraryItem " << libraryItemId << ": " << e.what() << "\n";
+  }
+}
+
+auto abscli::db::DbManager::updateBooksTable(const std::vector<abscli::models::Book>& books) -> void {
+  std::set<std::string> jsonIds;
+  std::string bookId;
+  try {
+  Statement stmt(m_absclidb, "INSERT INTO books (id,            title,         titleIgnorePrefix, subtitle,   "
+                                                "authorName,    authorNameLF,  narratorName,      seriesName, "
+                                                "genres,        publishedYear, publishedDate,     publisher,  "
+                                                "description,   isbn,          asin,              language,   "
+                                                "abridged,      coverPath,     tags,              numTracks,  "
+                                                "numAudioFiles, numChapters,   duration,          size,       "
+                                                "ebookFormat) "
+                              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " 
+                              "ON CONFLICT(id) DO UPDATE SET "
+                              "title             = excluded.title, "
+                              "titleIgnorePrefix = excluded.titleIgnorePrefix, "
+                              "subtitle          = excluded.subtitle, "
+                              "authorName        = excluded.authorName, "
+                              "authorNameLF      = excluded.authorNameLF, "
+                              "narratorName      = excluded.narratorName, "
+                              "seriesName        = excluded.seriesName, "
+                              "genres            = excluded.genres, "
+                              "publishedYear     = excluded.publishedYear, "
+                              "publishedDate     = excluded.publishedDate, "
+                              "publisher         = excluded.publisher, "
+                              "description       = excluded.description, "
+                              "isbn              = excluded.isbn, "
+                              "asin              = excluded.asin, "
+                              "language          = excluded.language, "
+                              "abridged          = excluded.abridged, "
+                              "coverPath         = excluded.coverPath, "
+                              "tags              = excluded.tags, "
+                              "numTracks         = excluded.numTracks, "
+                              "numAudioFiles     = excluded.numAudioFiles, "
+                              "numChapters       = excluded.numChapters, "
+                              "duration          = excluded.duration, "
+                              "size              = excluded.size, "
+                              "ebookFormat       = excluded.ebookFormat;"
+    );
+    for (const auto& book : books) {
+      jsonIds.insert(book.id);
+      bookId = book.id;
+      stmt.bind(1,  book.id);
+      stmt.bind(2,  book.title);
+      stmt.bind(3,  book.titleIgnorePrefix);
+      stmt.bind(4,  book.subtitle);
+      stmt.bind(5,  book.authorName);
+      stmt.bind(6,  book.authorNameLF);
+      stmt.bind(7,  book.narratorName);
+      stmt.bind(8,  book.seriesName);
+      stmt.bind(9,  book.genres);
+      stmt.bind(10, book.publishedYear);
+      stmt.bind(11, book.publishedDate);
+      stmt.bind(12, book.publisher);
+      stmt.bind(13, book.description);
+      stmt.bind(14, book.isbn);
+      stmt.bind(15, book.asin);
+      stmt.bind(16, book.language);
+      stmt.bind(17, book.abridged);
+      stmt.bind(18, book.coverPath);
+      stmt.bind(19, book.tags);
+      stmt.bind(20, book.numTracks);
+      stmt.bind(21, book.numAudioFiles);
+      stmt.bind(22, book.numChapters);
+      stmt.bind(23, book.duration);
+      stmt.bind(24, book.size);
+      stmt.bind(25, book.ebookFormat);
+      stmt.step(m_absclidb);
+      stmt.reset();
+    }
+
+    std::string deleteSql = "DELETE FROM books WHERE id NOT in (";
+    std::string placeholders;
+    for (size_t i = 0; i < jsonIds.size(); ++i) {
+      placeholders += (i == 0 ? "?" : ", ?");
+    }
+    deleteSql += placeholders + ");";
+
+    Statement deleteStmt(m_absclidb, deleteSql);
+
+    int index = 1;
+    for (const std::string& bId : jsonIds) {
+      deleteStmt.bind(index++, bId);
+    }
+    deleteStmt.step(m_absclidb);
+
+  } catch (const std::exception& e) {
+    std::cerr << "\033[1;31m[ERROR]\033[0m Failed to insert book " << bookId << ": " << e.what() << "\n";
   }
 }
