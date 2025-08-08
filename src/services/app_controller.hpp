@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 #include "token_storage.hpp"
 #include "../db/db_manager.hpp"
+#include "src/models/models.hpp"
 
 using json = nlohmann::json;
 
@@ -17,6 +18,7 @@ public:
   void syncUserData();
   void syncLibraries();
   void syncLibrariesItems();
+  auto parseBook(const json& itemMedia) -> abscli::models::Book;
 
   void listLibraries();
   void listLibraryItems();

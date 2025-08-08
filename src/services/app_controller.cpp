@@ -210,35 +210,7 @@ auto AppController::syncLibrariesItems() -> void {
               && libraryItem.contains("media")
               && libraryItem["media"].contains("metadata")
              ) {
-            const json& itemMedia = libraryItem["media"];
-            const auto& itemMetadata = itemMedia["metadata"];
-            books.emplace_back(abscli::models::Book{
-              .id                = abscli::utils::json::value(itemMedia,    "id"              , ""),
-              .title             = abscli::utils::json::value(itemMetadata, "title"            , ""),
-              .titleIgnorePrefix = abscli::utils::json::value(itemMetadata, "titleIgnorePrefix", ""),
-              .subtitle          = abscli::utils::json::value(itemMetadata, "subtitle"         , ""),
-              .authorName        = abscli::utils::json::value(itemMetadata, "authorName"       , ""),
-              .authorNameLF      = abscli::utils::json::value(itemMetadata, "authorNameLF"     , ""),
-              .narratorName      = abscli::utils::json::value(itemMetadata, "narratorName"     , ""),
-              .seriesName        = abscli::utils::json::value(itemMetadata, "seriesName"       , ""),
-              .genres            =                            itemMetadata.at("genres").dump(),
-              .publishedYear     = abscli::utils::json::value(itemMetadata, "publishedYear"    , ""),
-              .publishedDate     = abscli::utils::json::value(itemMetadata, "publishedDate"    , ""),
-              .publisher         = abscli::utils::json::value(itemMetadata, "publisher"        , ""),
-              .description       = abscli::utils::json::value(itemMetadata, "description"      , ""),
-              .isbn              = abscli::utils::json::value(itemMetadata, "isbn"             , ""),
-              .asin              = abscli::utils::json::value(itemMetadata, "asin"             , ""),
-              .language          = abscli::utils::json::value(itemMetadata, "language"         , ""),
-              .abridged          = abscli::utils::json::value(itemMetadata, "abridged"         , false),
-              .coverPath         = abscli::utils::json::value(itemMedia,    "coverPath"       , ""),
-              .tags              =                            itemMedia.at("tags").dump(),
-              .numTracks         = abscli::utils::json::value(itemMedia,    "numTracks"       , 0),
-              .numAudioFiles     = abscli::utils::json::value(itemMedia,    "numAudioFiles"   , 0),
-              .numChapters       = abscli::utils::json::value(itemMedia,    "numChapters"     , 0),
-              .duration          = abscli::utils::json::value(itemMedia,    "duration"        , 0.0f),
-              .size              = abscli::utils::json::value(itemMedia,    "size"            , 0),
-              .ebookFormat       = abscli::utils::json::value(itemMedia,    "ebookFormat"     , "")
-            });
+            books.emplace_back(parseBook(libraryItem["media"]));
           }
         }
       } catch (const std::exception& e) {
@@ -249,6 +221,44 @@ auto AppController::syncLibrariesItems() -> void {
   }
   m_db.updateLibraryItemsTable(libraryItems);
   m_db.updateBooksTable(books);
+}
+
+auto AppController::parseBook(const json& itemMedia) -> abscli::models::Book {
+  try {
+    const auto& itemMetadata = itemMedia["metadata"];
+
+    abscli::models::Book book{
+      .id                = abscli::utils::json::value(itemMedia,    "id"              , ""),
+      .title             = abscli::utils::json::value(itemMetadata, "title"            , ""),
+      .titleIgnorePrefix = abscli::utils::json::value(itemMetadata, "titleIgnorePrefix", ""),
+      .subtitle          = abscli::utils::json::value(itemMetadata, "subtitle"         , ""),
+      .authorName        = abscli::utils::json::value(itemMetadata, "authorName"       , ""),
+      .authorNameLF      = abscli::utils::json::value(itemMetadata, "authorNameLF"     , ""),
+      .narratorName      = abscli::utils::json::value(itemMetadata, "narratorName"     , ""),
+      .seriesName        = abscli::utils::json::value(itemMetadata, "seriesName"       , ""),
+      .genres            =                            itemMetadata.at("genres").dump(),
+      .publishedYear     = abscli::utils::json::value(itemMetadata, "publishedYear"    , ""),
+      .publishedDate     = abscli::utils::json::value(itemMetadata, "publishedDate"    , ""),
+      .publisher         = abscli::utils::json::value(itemMetadata, "publisher"        , ""),
+      .description       = abscli::utils::json::value(itemMetadata, "description"      , ""),
+      .isbn              = abscli::utils::json::value(itemMetadata, "isbn"             , ""),
+      .asin              = abscli::utils::json::value(itemMetadata, "asin"             , ""),
+      .language          = abscli::utils::json::value(itemMetadata, "language"         , ""),
+      .abridged          = abscli::utils::json::value(itemMetadata, "abridged"         , false),
+      .coverPath         = abscli::utils::json::value(itemMedia,    "coverPath"       , ""),
+      .tags              =                            itemMedia.at("tags").dump(),
+      .numTracks         = abscli::utils::json::value(itemMedia,    "numTracks"       , 0),
+      .numAudioFiles     = abscli::utils::json::value(itemMedia,    "numAudioFiles"   , 0),
+      .numChapters       = abscli::utils::json::value(itemMedia,    "numChapters"     , 0),
+      .duration          = abscli::utils::json::value(itemMedia,    "duration"        , 0.0f),
+      .size              = abscli::utils::json::value(itemMedia,    "size"            , 0),
+      .ebookFormat       = abscli::utils::json::value(itemMedia,    "ebookFormat"     , "")
+    };
+    return book;
+  } catch (const std::exception& e) {
+    std::cerr << "Failed to parse book data from json: " << e.what() << "\n";
+    return {};
+  }
 }
 
 auto AppController::requestData(const std::string& endpoint, const std::string& responseContains) -> std::optional<json> {
